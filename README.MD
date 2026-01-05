@@ -1,6 +1,10 @@
 ## Branching Logic
+
+- `dev` — main branch for demonstrating the completed solution.
 - `ci_dev` — formal branch used for CI/CD and integration of all tests.
 - Task-specific branches (e.g., `auth_dev`, `movies_dev`) were created for each task individually.
+- This structure reflects the real workflow, but currently we are formally making PRs `ci_dev → dev → main` to demonstrate the correct Git flow.
+
 
 ## Deploying the Project on AWS EC2
 
