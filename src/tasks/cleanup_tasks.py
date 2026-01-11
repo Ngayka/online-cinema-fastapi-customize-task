@@ -22,9 +22,9 @@ def cleanup_expired_tokens():
             await session.execute(
                 delete(PasswordResetTokenModel).where(PasswordResetTokenModel.expires_at < now)
             )
-            await session.commit()
+            await session.comit()
 
-        import anyio
-        anyio.run(_cleanup())
+        import asyncio
+        asyncio.run(_cleanup())
 
         return "Expired tokens deleted"

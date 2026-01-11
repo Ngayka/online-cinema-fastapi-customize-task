@@ -1,31 +1,32 @@
-import anyio
-from fastapi import Depends
-from starlette.templating import Jinja2Templates
+import asyncio
 from celery import shared_task
 
-from notifications import EmailSenderInterface
-from config.dependencies import get_settings, get_accounts_email_notificator
+from config.dependencies import get_settings
+from notifications.emails import EmailSender
 
 
-settings = get_settings()
-email_sender: EmailSenderInterface = Depends(get_accounts_email_notificator)
-templates = Jinja2Templates(directory=settings.templates_dir)
-
-
-@shared_task
-def send_confirmation_email(recipient_email: str, token: str) -> None:
-    """Send activation email asynchronously."""
-    activation_link = f"{settings.FRONTEND_URL}/auth/activate?token={token}"
+@shared_task(name="tasks.send_activation_email")
+def send_activation_email_task(email: str, activation_link: str) -> None:
+    """
+    Celery task to send activation email.
+    """
 
     async def _send():
-        await email_sender.send_activation_email(
-                email=recipient_email,
-                activation_link=activation_link
-        )
-    try:
-        anyio.run(_send)
-        print(f"Successfully send activation letter for {recipient_email}")
+        settings = get_settings()
 
-    except Exception as e:
-        print(f"CELERY_TASK failed! Error sending email to {recipient_email}: {e}")
-        raise
+        sender = EmailSender(
+            hostname=settings.SMTP_HOST,
+            port=settings.SMTP_PORT,
+            email=settings.SMTP_EMAIL,
+            password=settings.SMTP_PASSWORD,
+            use_tls=settings.SMTP_USE_TLS,
+            template_dir=settings.EMAIL_TEMPLATE_DIR,
+            activation_email_template_name=settings.ACTIVATION_EMAIL_TEMPLATE,
+            activation_complete_email_template_name=settings.ACTIVATION_COMPLETE_TEMPLATE,
+            password_email_template_name=settings.PASSWORD_RESET_TEMPLATE,
+            password_complete_email_template_name=settings.PASSWORD_RESET_COMPLETE_TEMPLATE,
+        )
+
+        await sender.send_activation_email(email, activation_link)
+
+    asyncio.run(_send())
