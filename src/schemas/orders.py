@@ -4,7 +4,7 @@ from pydantic import BaseModel, field_validator, ConfigDict
 from datetime import datetime
 from decimal import Decimal
 
-from schemas import MovieInCartReadSchema
+from schemas.cart import MovieInCartReadSchema
 
 from database.models.orders import OrderStatusEnum
 

@@ -1,10 +1,11 @@
-"""Fix movie migrations
+"""Add cart models
 
-Revision ID: 844c425609d8
-Revises: b6678ecef7b6
-Create Date: 2025-11-26 16:20:35.898292
+Revision ID: fca9e1f5f2ea
+Revises: 41cdafa531cf
+Create Date: 2025-11-26 15:23:58.372646
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -12,8 +13,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '844c425609d8'
-down_revision: Union[str, None] = 'b6678ecef7b6'
+revision: str = "fca9e1f5f2ea"
+down_revision: Union[str, None] = "41cdafa531cf"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

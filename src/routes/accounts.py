@@ -1,15 +1,18 @@
+from fastapi import APIRouter
 from pydantic import BaseModel, EmailStr, field_validator
+from config import get_settings
+from database.validators import accounts as accounts_validators
 
-from database import accounts_validators
+
+router = APIRouter()
+app_settings = get_settings()
 
 
 class BaseEmailPasswordSchema(BaseModel):
     email: EmailStr
     password: str
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
 
     @field_validator("email")
     @classmethod
@@ -48,9 +51,7 @@ class UserRegistrationResponseSchema(BaseModel):
     id: int
     email: EmailStr
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
 
 
 class UserActivationRequestSchema(BaseModel):

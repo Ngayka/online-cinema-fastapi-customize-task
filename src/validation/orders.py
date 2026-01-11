@@ -1,5 +1,4 @@
-from database import MovieModel
-from database.models.movies import MovieStatusEnum
+from database.models.movies import MovieModel, MovieStatusEnum
 
 
 async def is_movie_available(movie: MovieModel) -> bool:

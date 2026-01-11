@@ -1,10 +1,11 @@
-"""Add Payment Model and PaymentItem Model
+"""PaymentModel and PaymentItemModel
 
-Revision ID: 1599d27936d3
-Revises: 7f00834ba739
-Create Date: 2025-12-10 15:10:14.927875
+Revision ID: 2931f2465c0f
+Revises: 48a7a642a582
+Create Date: 2025-12-02 17:22:15.045545
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -12,8 +13,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '1599d27936d3'
-down_revision: Union[str, None] = '7f00834ba739'
+revision: str = "2931f2465c0f"
+down_revision: Union[str, None] = "48a7a642a582"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

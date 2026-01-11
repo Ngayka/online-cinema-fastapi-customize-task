@@ -1,201 +1,164 @@
-from datetime import date, datetime
+import datetime
 from decimal import Decimal
-from typing import Optional, List
+from enum import Enum
+from typing import Optional, TYPE_CHECKING
 
-from pydantic import BaseModel, Field, field_validator
+from sqlalchemy import String, Float, Text, DECIMAL, UniqueConstraint, Date, ForeignKey, Table, Column, Boolean
+from sqlalchemy.orm import mapped_column, Mapped, relationship
+from sqlalchemy import Enum as SQLAlchemyEnum
 
-from database.models.movies import MovieStatusEnum
-from schemas.examples.movies import (
-    country_schema_example,
-    language_schema_example,
-    genre_schema_example,
-    actor_schema_example,
-    movie_item_schema_example,
-    movie_list_response_schema_example,
-    movie_create_schema_example,
-    movie_detail_schema_example,
-    movie_update_schema_example
+from database.models.base import Base
+
+
+if TYPE_CHECKING:
+    from .cart import CartItem
+    from .orders import OrderItem
+
+
+class MovieStatusEnum(str, Enum):
+    RELEASED = "Released"
+    POST_PRODUCTION = "Post Production"
+    IN_PRODUCTION = "In Production"
+
+
+MoviesGenresModel = Table(
+    "movies_genres",
+    Base.metadata,
+    Column(
+        "movie_id",
+        ForeignKey("movies.id", ondelete="CASCADE"), primary_key=True, nullable=False),
+    Column(
+        "genre_id",
+        ForeignKey("genres.id", ondelete="CASCADE"), primary_key=True, nullable=False),
+)
+
+ActorsMoviesModel = Table(
+    "actors_movies",
+    Base.metadata,
+    Column(
+        "movie_id",
+        ForeignKey("movies.id", ondelete="CASCADE"), primary_key=True, nullable=False),
+    Column(
+        "actor_id",
+        ForeignKey("actors.id", ondelete="CASCADE"), primary_key=True, nullable=False),
+)
+
+MoviesLanguagesModel = Table(
+    "movies_languages",
+    Base.metadata,
+    Column("movie_id", ForeignKey("movies.id", ondelete="CASCADE"), primary_key=True),
+    Column("language_id", ForeignKey("languages.id", ondelete="CASCADE"), primary_key=True),
 )
 
 
-class LanguageSchema(BaseModel):
-    id: int
-    name: str
+class GenreModel(Base):
+    __tablename__ = "genres"
 
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                language_schema_example
-            ]
-        }
-    }
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
+    movies: Mapped[list["MovieModel"]] = relationship(
+        "MovieModel",
+        secondary=MoviesGenresModel,
+        back_populates="genres"
+    )
 
-class CountrySchema(BaseModel):
-    id: int
-    code: str
-    name: Optional[str]
-
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                country_schema_example
-            ]
-        }
-    }
+    def __repr__(self):
+        return f"<Genre(name='{self.name}')>"
 
 
-class GenreSchema(BaseModel):
-    id: int
-    name: str
+class ActorModel(Base):
+    __tablename__ = "actors"
 
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                genre_schema_example
-            ]
-        }
-    }
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
+    movies: Mapped[list["MovieModel"]] = relationship(
+        "MovieModel",
+        secondary=ActorsMoviesModel,
+        back_populates="actors"
+    )
 
-class ActorSchema(BaseModel):
-    id: int
-    name: str
-
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                actor_schema_example
-            ]
-        }
-    }
+    def __repr__(self):
+        return f"<Actor(name='{self.name}')>"
 
 
-class MovieBaseSchema(BaseModel):
-    name: str = Field(..., max_length=255)
-    date: date
-    score: float = Field(..., ge=0, le=100)
-    overview: str
-    status: MovieStatusEnum
-    budget: float = Field(..., ge=0)
-    revenue: float = Field(..., ge=0)
+class CountryModel(Base):
+    __tablename__ = "countries"
 
-    model_config = {
-        "from_attributes": True
-    }
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    code: Mapped[str] = mapped_column(String(3), unique=True, nullable=False)
+    name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
-    @field_validator("date")
+    movies: Mapped[list["MovieModel"]] = relationship("MovieModel", back_populates="country")
+
+    def __repr__(self):
+        return f"<Country(code='{self.code}', name='{self.name}')>"
+
+
+class LanguageModel(Base):
+    __tablename__ = "languages"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+
+    movies: Mapped[list["MovieModel"]] = relationship(
+        "MovieModel",
+        secondary=MoviesLanguagesModel,
+        back_populates="languages"
+    )
+
+    def __repr__(self):
+        return f"<Language(name='{self.name}')>"
+
+
+class MovieModel(Base):
+    __tablename__ = "movies"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    date: Mapped[datetime.date] = mapped_column(Date, nullable=False)
+    score: Mapped[float] = mapped_column(Float, nullable=False)
+    overview: Mapped[str] = mapped_column(Text, nullable=False)
+    current_price: Mapped[Decimal] = mapped_column(DECIMAL(10, 2), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    status: Mapped[MovieStatusEnum] = mapped_column(
+        SQLAlchemyEnum(MovieStatusEnum), nullable=False
+    )
+    budget: Mapped[float] = mapped_column(DECIMAL(15, 2), nullable=False)
+    revenue: Mapped[float] = mapped_column(Float, nullable=False)
+
+    cart_items: Mapped[list["CartItem"]] = relationship("CartItem", back_populates="movie")
+
+    country_id: Mapped[int] = mapped_column(ForeignKey("countries.id"), nullable=False)
+    country: Mapped["CountryModel"] = relationship("CountryModel", back_populates="movies")
+    order_items: Mapped[list["OrderItem"]] = relationship(back_populates="movie")
+
+    genres: Mapped[list["GenreModel"]] = relationship(
+        "GenreModel",
+        secondary=MoviesGenresModel,
+        back_populates="movies"
+    )
+
+    actors: Mapped[list["ActorModel"]] = relationship(
+        "ActorModel",
+        secondary=ActorsMoviesModel,
+        back_populates="movies"
+    )
+
+    languages: Mapped[list["LanguageModel"]] = relationship(
+        "LanguageModel",
+        secondary=MoviesLanguagesModel,
+        back_populates="movies"
+    )
+
+    __table_args__ = (
+        UniqueConstraint("name", "date", name="unique_movie_constraint"),
+    )
+
     @classmethod
-    def validate_date(cls, value):
-        current_year = datetime.now().year
-        if value.year > current_year + 1:
-            raise ValueError(f"The year in 'date' cannot be greater than {current_year + 1}.")
-        return value
+    def default_order_by(cls):
+        return [cls.id.desc()]
 
-
-class MovieDetailSchema(MovieBaseSchema):
-    id: int
-    country: CountrySchema
-    genres: List[GenreSchema]
-    actors: List[ActorSchema]
-    languages: List[LanguageSchema]
-    current_price: Decimal
-
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                movie_detail_schema_example
-            ]
-        }
-    }
-
-
-class MovieListItemSchema(BaseModel):
-    id: int
-    name: str
-    date: date
-    score: float
-    overview: str
-
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                movie_item_schema_example
-            ]
-        }
-    }
-
-
-class MovieListResponseSchema(BaseModel):
-    movies: List[MovieListItemSchema]
-    prev_page: Optional[str]
-    next_page: Optional[str]
-    total_pages: int
-    total_items: int
-
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                movie_list_response_schema_example
-            ]
-        }
-    }
-
-
-class MovieCreateSchema(BaseModel):
-    name: str
-    date: date
-    score: float = Field(..., ge=0, le=100)
-    overview: str
-    status: MovieStatusEnum
-    budget: float = Field(..., ge=0)
-    revenue: float = Field(..., ge=0)
-    country: str
-    genres: List[str]
-    actors: List[str]
-    languages: List[str]
-
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                movie_create_schema_example
-            ]
-        }
-    }
-
-    @field_validator("country", mode="before")
-    @classmethod
-    def normalize_country(cls, value: str) -> str:
-        return value.upper()
-
-    @field_validator("genres", "actors", "languages", mode="before")
-    @classmethod
-    def normalize_list_fields(cls, value: List[str]) -> List[str]:
-        return [item.title() for item in value]
-
-
-class MovieUpdateSchema(BaseModel):
-    name: Optional[str] = None
-    date: Optional[date] = None
-    score: Optional[float] = Field(None, ge=0, le=100)
-    overview: Optional[str] = None
-    status: Optional[MovieStatusEnum] = None
-    budget: Optional[float] = Field(None, ge=0)
-    revenue: Optional[float] = Field(None, ge=0)
-
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                movie_update_schema_example
-            ]
-        }
-    }
+    def __repr__(self):
+        return f"<Movie(name='{self.name}', release_date='{self.date}', score={self.score})>"

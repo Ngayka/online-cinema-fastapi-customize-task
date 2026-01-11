@@ -11,7 +11,5 @@ async def setup_redis():
     global redis_client
 
     redis_client = redis.from_url(
-        settings.REDIS_URL,
-        encoding="utf-8",
-        decode_responses=True
+        settings.REDIS_URL, encoding="utf-8", decode_responses=True
     )

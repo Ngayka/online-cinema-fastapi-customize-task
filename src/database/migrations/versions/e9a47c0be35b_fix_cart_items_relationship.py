@@ -1,10 +1,11 @@
-"""Add Order and PaymentItem Models
+"""Fix Cart Items relationship
 
-Revision ID: f80ab5675035
-Revises: 8730a0c0d2e1
-Create Date: 2025-12-13 09:57:48.642332
+Revision ID: e9a47c0be35b
+Revises: 6209f90ef650
+Create Date: 2025-12-14 18:56:08.882155
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -12,8 +13,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f80ab5675035'
-down_revision: Union[str, None] = '8730a0c0d2e1'
+revision: str = "e9a47c0be35b"
+down_revision: Union[str, None] = "6209f90ef650"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

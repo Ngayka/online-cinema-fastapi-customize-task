@@ -2,10 +2,10 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Optional, List, Dict, Any
 
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, field_validator, model_validator, ValidationInfo
 
 from database.models.payments import PaymentStatusEnum
-from schemas import MovieInCartReadSchema, OrderDetailSchema, OrderItemWithMovieSchema
+from schemas.orders import OrderDetailSchema, OrderItemWithMovieSchema
 
 
 class PaymentCreateSchema(BaseModel):
@@ -136,12 +136,13 @@ class PaymentItemSchema(BaseModel):
             payment_id=obj.payment_id,
             order_item_id=obj.order_item_id,
             price_at_payment=obj.price_at_payment,
-            movie=obj.order_item.movie
+            movie=obj.order_item.movie,
         )
 
 
 class PaymentFilterSchema(BaseModel):
     """Admin Options"""
+
     user_id: Optional[int] = None
     status: Optional[PaymentStatusEnum] = None
     start_date: Optional[datetime] = None
@@ -223,17 +224,31 @@ class PaymentConfirmationEmailSchema(BaseModel):
 
 class PaymentStatusUpdateSchema(BaseModel):
     """for admins"""
+
     status: PaymentStatusEnum
     reason: Optional[str] = None
 
     @field_validator("status")
     @classmethod
-    def validate_status_change(cls, value):
+    def validate_status_transition(cls, v: PaymentStatusEnum, info: ValidationInfo):
+        current = info.data.get("current_status")
+
+        if not current:
+            return v
         allowed_transitions = {
+            PaymentStatusEnum.PENDING: [PaymentStatusEnum.SUCCESSFUL, PaymentStatusEnum.CANCELLED],
             PaymentStatusEnum.SUCCESSFUL: [PaymentStatusEnum.REFUNDED],
-            PaymentStatusEnum.CANCELLED: [PaymentStatusEnum.SUCCESSFUL]
+            PaymentStatusEnum.CANCELLED: [PaymentStatusEnum.SUCCESSFUL],
+            PaymentStatusEnum.REFUNDED: [],
         }
-        return value
+        if v != current:
+            allowed = allowed_transitions.get(current, [])
+            if v not in allowed:
+                raise ValueError(
+                    f"Invalid transition from {current.value} to {v.value}. "
+                    f"Allowed: {[s.value for s in allowed]}"
+                )
+        return v
 
 
 class RefundCreateSchema(BaseModel):
@@ -241,11 +256,9 @@ class RefundCreateSchema(BaseModel):
     amount: Optional[Decimal] = None
     reason: str
 
-
-@field_validator("amount")
-@classmethod
-def validate_refund_amount(cls, value):
-    if value is not None or value <= 0:
-        raise ValueError("Refund amount must be positive")
-    return value
-
+    @field_validator("amount")
+    @classmethod
+    def validate_refund_amount(cls, value):
+        if value is not None and value <= 0:
+            raise ValueError("Refund amount must be positive")
+        return value
