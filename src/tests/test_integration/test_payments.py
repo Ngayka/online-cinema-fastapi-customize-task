@@ -4,7 +4,8 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from database import Payment, PaymentStatusEnum, CartItem, Cart, PaymentItem
+from database.models.payments import Payment, PaymentStatusEnum, PaymentItem
+from database.models.cart import CartItem, Cart
 
 
 @pytest.mark.asyncio

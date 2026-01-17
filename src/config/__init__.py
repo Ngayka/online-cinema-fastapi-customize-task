@@ -12,3 +12,5 @@ from config.order_config import (
     get_purchased_movie_ids,
     get_order_by_id_and_user,
 )
+from .celery_app import celery_app
+__all__ = ("celery_app",)

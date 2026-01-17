@@ -5,7 +5,8 @@ from unittest.mock import AsyncMock, patch, MagicMock
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from database import Order, OrderStatusEnum, CartItem, Cart
+from database.models.orders import Order, OrderStatusEnum
+from database.models.cart import CartItem, Cart
 
 
 @pytest.mark.asyncio

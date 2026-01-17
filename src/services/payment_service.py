@@ -5,7 +5,8 @@ from typing import Any
 import stripe
 
 from config.settings import Settings
-from database import Order, UserModel
+from database.models.accounts import UserModel
+from database.models.orders import Order
 from schemas import PaymentRequestSchema
 
 logger = logging.getLogger(__name__)

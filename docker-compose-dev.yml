@@ -1,6 +1,6 @@
 services:
   db:
-    image: 'postgres:16'
+    image: 'postgres:17'
     container_name: postgres_theater
     env_file:
       - .env
@@ -28,6 +28,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      minio:
+        condition: service_healthy
+      redis:
+        condition: service_started
     volumes:
       - pgadmin_theater_data:/var/lib/pgadmin
     networks:
@@ -51,6 +55,8 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      redis:
+        condition: service_started
     volumes:
       - ./src:/usr/src/fastapi
     networks:
@@ -122,6 +128,40 @@ services:
     networks:
       - theater_network
 
+  celery_worker:
+    build: .
+    container_name: celery_worker_theater
+    command: celery -A config.celery_app worker -l info
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/usr/src/fastapi
+    depends_on:
+      redis:
+        condition: service_started
+    volumes:
+      - ./src:/usr/src/fastapi
+    networks:
+      - theater_network
+
+  celery_beat:
+    build: .
+    container_name: celery_beat_theater
+    command: celery -A config.celery_app beat -l info
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/usr/src/fastapi
+    depends_on:
+      redis:
+        condition: service_started
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src:/usr/src/fastapi
+    networks:
+      - theater_network
+
   redis:
     image: redis:7-alpine
     container_name: cinema-redis
@@ -132,3 +172,17 @@ services:
       - "6379"
     networks:
       - theater_network
+
+volumes:
+  postgres_theater_data:
+    driver: local
+  pgadmin_theater_data:
+    driver: local
+  minio_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  theater_network:
+    driver: bridge

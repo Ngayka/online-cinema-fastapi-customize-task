@@ -6,7 +6,7 @@ import pytest
 import httpx
 from bs4 import BeautifulSoup
 
-from database import (
+from database.models.accounts import (
     ActivationTokenModel,
     UserModel,
     RefreshTokenModel,
@@ -35,17 +35,26 @@ async def test_registration(
     - Verify that an email was sent to the expected recipient.
     - Ensure the email body contains the activation link.
     """
+    from config.celery_app import celery_app
+    celery_app.conf.task_always_eager = True
+    celery_app.conf.task_eager_propagates = True
+
     user_data = {"email": "test@mate.com", "password": "StrongPassword123!"}
 
     response = await e2e_client.post("/api/v1/accounts/register/", json=user_data)
     assert response.status_code == 201, f"Expected 201, got {response.status_code}"
+    await e2e_db_session.commit()
+    import asyncio
+    await asyncio.sleep(1.5)
     response_data = response.json()
     assert response_data["email"] == user_data["email"]
 
     mailhog_url = (
-        f"http://{settings.EMAIL_HOST}:{settings.MAILHOG_API_PORT}/api/v2/messages"
+        f"http://127.0.0.1:{settings.MAILHOG_API_PORT}/api/v2/messages"
     )
     async with httpx.AsyncClient() as client:
+        import asyncio
+        await asyncio.sleep(1)
         mailhog_response = await client.get(mailhog_url)
 
     await e2e_db_session.commit()
@@ -105,6 +114,7 @@ async def test_account_activation(e2e_client, settings, e2e_db_session):
     """
     user_email = "test@mate.com"
 
+    await e2e_db_session.flush()
     stmt = (
         select(ActivationTokenModel)
         .join(UserModel)
@@ -137,7 +147,7 @@ async def test_account_activation(e2e_client, settings, e2e_db_session):
     assert activated_user.is_active, f"User {user_email} is not active!"
 
     mailhog_url = (
-        f"http://{settings.EMAIL_HOST}:{settings.MAILHOG_API_PORT}/api/v2/messages"
+        f"http://127.0.0.1:8025/api/v2/messages"
     )
     async with httpx.AsyncClient() as client:
         mailhog_response = await client.get(mailhog_url)

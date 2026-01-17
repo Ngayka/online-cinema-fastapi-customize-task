@@ -23,6 +23,7 @@ class EmailSender(EmailSenderInterface):
         activation_complete_email_template_name: str,
         password_email_template_name: str,
         password_complete_email_template_name: str,
+        payment_confirmation_template_name: str
     ):
         self._hostname = hostname
         self._port = port
@@ -37,7 +38,7 @@ class EmailSender(EmailSenderInterface):
         self._password_complete_email_template_name = (
             password_complete_email_template_name
         )
-
+        self._payment_confirmation_template_name = payment_confirmation_template_name
         self._env = Environment(loader=FileSystemLoader(template_dir))
 
     async def _send_email(
@@ -67,7 +68,8 @@ class EmailSender(EmailSenderInterface):
             await smtp.connect()
             if self._use_tls:
                 await smtp.starttls()
-            await smtp.login(self._email, self._password)
+            if self._password:
+                await smtp.login(self._email, self._password)
             await smtp.sendmail(self._email, [recipient], message.as_string())
             await smtp.quit()
         except aiosmtplib.SMTPException as error:

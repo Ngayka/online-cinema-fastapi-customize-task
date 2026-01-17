@@ -1,1 +1,1 @@
-from services.payment_service import PaymentService
+from .payment_service import PaymentService

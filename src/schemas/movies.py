@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field, field_validator
 
-from database.models.movies import MovieStatusEnum
+from database.models.movies import MovieStatusEnum, MovieModel
 from schemas.examples.movies import (
     country_schema_example,
     language_schema_example,

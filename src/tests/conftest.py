@@ -45,8 +45,8 @@ async def reset_db(request):
         yield
 
 
-@pytest_asyncio.fixture(scope="session")
-async def reset_db_once_for_e2e(request):
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def reset_db_once_for_e2e():
     """
     Reset the database once for end-to-end tests.
 
@@ -54,6 +54,7 @@ async def reset_db_once_for_e2e(request):
     ensuring the database is reset before running E2E tests.
     """
     await reset_database()
+    yield
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -63,7 +64,8 @@ async def settings():
 
     This fixture returns the application settings by calling get_settings().
     """
-    return get_settings()
+    from config.settings import TestingSettings
+    return TestingSettings()
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -120,17 +122,19 @@ async def client(email_sender_stub, s3_storage_fake):
 
 
 @pytest_asyncio.fixture(scope="session")
-async def e2e_client():
+async def e2e_client(settings):
     """
     Provide an asynchronous HTTP client for end-to-end tests.
 
     This client is available at the session scope.
     """
+    from config.dependencies import get_settings
+    app.dependency_overrides[get_settings] = lambda: settings
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as async_client:
         yield async_client
-
+    app.dependency_overrides.clear()
 
 @pytest_asyncio.fixture(scope="function")
 async def db_session():

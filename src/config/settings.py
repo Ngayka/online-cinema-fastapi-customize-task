@@ -13,6 +13,7 @@ class BaseAppSettings(BaseSettings):
     )
 
     PATH_TO_EMAIL_TEMPLATES_DIR: str = str(BASE_DIR / "notifications" / "templates")
+    SITE_URL: str = os.getenv("SITE_URL", "http://127.0.0.1:8000")
     ACTIVATION_EMAIL_TEMPLATE_NAME: str = "activation_request.html"
     ACTIVATION_COMPLETE_EMAIL_TEMPLATE_NAME: str = "activation_complete.html"
     PAYMENT_CONFIRMATION_TEMPLATE_NAME: str = "payment_confirmation.html"
@@ -100,6 +101,21 @@ class TestingSettings(BaseAppSettings):
     STRIPE_PUBLISHABLE_KEY: str = "pk_test_mock_key"
     STRIPE_WEBHOOK_SECRET: str = "whsec_mock_secret"
     MOCK_PAYMENTS: bool = True
+    EMAIL_HOST: str = "127.0.0.1"
+    EMAIL_PORT: int = 1025
+    EMAIL_USE_TLS: bool = False
+    EMAIL_HOST_USER: str = "noreply@test.com"
+    EMAIL_PASSWORD: str = "test"
+    SMTP_HOST: str = "127.0.0.1"
+    SMTP_PORT: int = 1025
+    SMTP_USE_TLS: bool = False
+    SMTP_EMAIL: str = "noreply@test.com"
+    SMTP_PASSWORD: str = "test"
+    ACTIVATION_EMAIL_TEMPLATE_NAME: str = "activation_request.html"
+    ACTIVATION_COMPLETE_EMAIL_TEMPLATE_NAME: str = "activation_complete.html"
+    PAYMENT_CONFIRMATION_TEMPLATE_NAME: str = "payment_confirmation.html"
+    PASSWORD_RESET_TEMPLATE_NAME: str = "password_reset_request.html"
+    PASSWORD_RESET_COMPLETE_TEMPLATE_NAME: str = "password_reset_complete.html"
 
     def model_post_init(self, __context: dict[str, Any] | None = None) -> None:
         object.__setattr__(self, "PATH_TO_DB", ":memory:")

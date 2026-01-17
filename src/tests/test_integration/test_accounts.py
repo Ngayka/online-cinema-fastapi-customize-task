@@ -6,7 +6,7 @@ from sqlalchemy import select, delete, func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload
 
-from database import (
+from database.models.accounts import (
     UserModel,
     ActivationTokenModel,
     PasswordResetTokenModel,
@@ -25,8 +25,11 @@ async def test_register_user_success(client, db_session, seed_user_groups):
     """
     payload = {"email": "testuser@example.com", "password": "StrongPassword123!"}
 
-    response = await client.post("/api/v1/accounts/register/", json=payload)
-    assert response.status_code == 201, "Expected status code 201 Created."
+    with patch("routes.accounts.send_activation_email_task.delay") as mock_celery_task:
+        response = await client.post("/api/v1/accounts/register/", json=payload)
+
+        assert response.status_code == 201, "Expected status code 201 Created."
+        assert mock_celery_task.called, "The Celery task was not triggered."
     response_data = response.json()
     assert response_data["email"] == payload["email"], "Returned email does not match."
     assert "id" in response_data, "Response does not contain user ID."

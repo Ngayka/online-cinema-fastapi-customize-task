@@ -6,7 +6,7 @@ from database import ActivationTokenModel, PasswordResetTokenModel
 from database.session_postgresql import AsyncPostgresqlSessionLocal
 
 
-@shared_task
+@shared_task(name="tasks.cleanup_tasks.cleanup_expired_tokens")
 def cleanup_expired_tokens():
     """
     Celery task to delete expired activation and password reset tokens.

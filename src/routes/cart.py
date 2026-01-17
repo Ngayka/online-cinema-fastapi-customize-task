@@ -7,7 +7,7 @@ from config import get_settings
 from config.dependencies_auth import get_current_user
 from database import get_db
 
-from database.models.cart import CartItem
+from database.models.cart import CartItem, Cart
 from database.models.accounts import UserModel
 from database.models.movies import MovieModel
 from schemas.cart import (
