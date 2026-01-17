@@ -8,7 +8,7 @@ jobs:
   lint-and-types:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -40,7 +40,7 @@ jobs:
           "test_payments.py"
         ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -53,7 +53,7 @@ jobs:
         run: |
           poetry run pytest src/tests/test_integration/${{ matrix.test-file }} --cov=src --cov-report=xml
       - name: Upload coverage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.test-file }}
           path: coverage.xml
@@ -62,7 +62,7 @@ jobs:
     needs: lint-and-types
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run Docker Tests
         env:
           SECRET_KEY_ACCESS: ${{ secrets.SECRET_KEY_ACCESS }}
