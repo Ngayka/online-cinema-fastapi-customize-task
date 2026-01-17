@@ -23,7 +23,7 @@ class LanguageSchema(BaseModel):
 
     model_config = {
         "from_attributes": True,
-        "json_schema_extra": {"examples": [language_schema_example]}, # type: ignore
+        "json_schema_extra": {"examples": [language_schema_example]},  # type: ignore
     }
 
 
@@ -34,7 +34,7 @@ class CountrySchema(BaseModel):
 
     model_config = {
         "from_attributes": True,
-        "json_schema_extra": {"examples": [country_schema_example]}, # type: ignore
+        "json_schema_extra": {"examples": [country_schema_example]},  # type: ignore
     }
 
 
@@ -44,7 +44,7 @@ class GenreSchema(BaseModel):
 
     model_config = {
         "from_attributes": True,
-        "json_schema_extra": {"examples": [genre_schema_example]}, # type: ignore
+        "json_schema_extra": {"examples": [genre_schema_example]},  # type: ignore
     }
 
 
@@ -54,7 +54,7 @@ class ActorSchema(BaseModel):
 
     model_config = {
         "from_attributes": True,
-        "json_schema_extra": {"examples": [actor_schema_example]}, # type: ignore
+        "json_schema_extra": {"examples": [actor_schema_example]},  # type: ignore
     }
 
 
@@ -67,7 +67,7 @@ class MovieBaseSchema(BaseModel):
     budget: float = Field(..., ge=0)
     revenue: float = Field(..., ge=0)
 
-    model_config = {"from_attributes": True} # type: ignore
+    model_config = {"from_attributes": True}  # type: ignore
 
     @field_validator("date")
     @classmethod
@@ -89,7 +89,7 @@ class MovieDetailSchema(MovieBaseSchema):
 
     model_config = {
         "from_attributes": True,
-        "json_schema_extra": {"examples": [movie_detail_schema_example]}, # type: ignore
+        "json_schema_extra": {"examples": [movie_detail_schema_example]},  # type: ignore
     }
 
 
@@ -102,7 +102,7 @@ class MovieListItemSchema(BaseModel):
 
     model_config = {
         "from_attributes": True,
-        "json_schema_extra": {"examples": [movie_item_schema_example]}, # type: ignore
+        "json_schema_extra": {"examples": [movie_item_schema_example]},  # type: ignore
     }
 
 
@@ -115,7 +115,7 @@ class MovieListResponseSchema(BaseModel):
 
     model_config = {
         "from_attributes": True,
-        "json_schema_extra": {"examples": [movie_list_response_schema_example]}, # type: ignore
+        "json_schema_extra": {"examples": [movie_list_response_schema_example]},  # type: ignore
     }
 
 
@@ -134,7 +134,7 @@ class MovieCreateSchema(BaseModel):
 
     model_config = {
         "from_attributes": True,
-        "json_schema_extra": {"examples": [movie_create_schema_example]}, # type: ignore
+        "json_schema_extra": {"examples": [movie_create_schema_example]},  # type: ignore
     }
 
     @field_validator("country", mode="before")
@@ -159,5 +159,5 @@ class MovieUpdateSchema(BaseModel):
 
     model_config = {
         "from_attributes": True,
-        "json_schema_extra": {"examples": [movie_update_schema_example]}, # type: ignore
+        "json_schema_extra": {"examples": [movie_update_schema_example]},  # type: ignore
     }
