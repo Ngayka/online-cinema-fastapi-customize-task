@@ -33,7 +33,7 @@ class PaymentResultSchema(BaseModel):
 
 
 class PaymentResponseSchema(BaseModel):
-    int: int
+    id: int
     order_id: int
     amount: Decimal
     status: PaymentStatusEnum

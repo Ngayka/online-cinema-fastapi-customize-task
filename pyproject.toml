@@ -4,6 +4,13 @@ version = "0.1.0"
 description = "Mate task for first lesson"
 authors = ["Yurii Okal <yurii.okal@mate.com>"]
 
+[tool.mypy]
+python_version = "3.12"
+explicit_package_bases = true
+mypy_path = "src"
+ignore_missing_imports = true
+namespace_packages = true
+
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = "^0.115.6"
@@ -44,3 +51,9 @@ asgiref = "^3.11.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pandas-stubs (>=2.3.3.260113,<3.0.0.0)",
+    "types-tqdm (>=4.67.0.20250809,<5.0.0.0)"
+]
