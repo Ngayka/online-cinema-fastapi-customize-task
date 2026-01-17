@@ -9,10 +9,7 @@ from config import get_settings, get_accounts_email_notificator, get_s3_storage_
 from database.models.accounts import UserGroupModel, UserGroupEnum, UserModel
 from database.models.movies import CountryModel, MovieModel, MovieStatusEnum
 from database.models.cart import Cart
-from database import (
-    reset_database,
-    get_db_contextmanager
-)
+from database import reset_database, get_db_contextmanager
 from database.populate import CSVDatabaseSeeder
 from main import app
 from schemas import PaymentRequestSchema
@@ -65,6 +62,7 @@ async def settings():
     This fixture returns the application settings by calling get_settings().
     """
     from config.settings import TestingSettings
+
     return TestingSettings()
 
 
@@ -129,12 +127,14 @@ async def e2e_client(settings):
     This client is available at the session scope.
     """
     from config.dependencies import get_settings
+
     app.dependency_overrides[get_settings] = lambda: settings
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as async_client:
         yield async_client
     app.dependency_overrides.clear()
+
 
 @pytest_asyncio.fixture(scope="function")
 async def db_session():

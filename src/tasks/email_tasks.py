@@ -11,6 +11,7 @@ def send_activation_email_task(email: str, activation_link: str) -> None:
     Celery cannot run async directly, so we bootstrap an event loop
     and call the real async email sender.
     """
+
     async def _send():
         settings = get_settings()
 
@@ -28,6 +29,7 @@ def send_activation_email_task(email: str, activation_link: str) -> None:
             payment_confirmation_template_name=settings.PAYMENT_CONFIRMATION_TEMPLATE_NAME,
         )
         await sender.send_activation_email(email, activation_link)
+
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:

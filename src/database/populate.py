@@ -18,7 +18,7 @@ from database.models.movies import (
     ActorsMoviesModel,
     LanguageModel,
     MoviesLanguagesModel,
-    MovieModel
+    MovieModel,
 )
 from database.models.accounts import (
     UserGroupModel,

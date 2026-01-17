@@ -1,5 +1,5 @@
 import os
-from celery import Celery # type: ignore
+from celery import Celery  # type: ignore
 from celery.schedules import crontab
 from config.dependencies import get_settings
 
@@ -11,10 +11,7 @@ celery_app = Celery(
 )
 
 if os.environ.get("TESTING") == "True":
-    celery_app.conf.update(
-        task_always_eager=True,
-        task_eager_propagates=True
-    )
+    celery_app.conf.update(task_always_eager=True, task_eager_propagates=True)
 celery_app.conf.imports = [
     "tasks.email_tasks",
     "tasks.cleanup_tasks",

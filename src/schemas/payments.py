@@ -236,7 +236,10 @@ class PaymentStatusUpdateSchema(BaseModel):
         if not current:
             return v
         allowed_transitions = {
-            PaymentStatusEnum.PENDING: [PaymentStatusEnum.SUCCESSFUL, PaymentStatusEnum.CANCELLED],
+            PaymentStatusEnum.PENDING: [
+                PaymentStatusEnum.SUCCESSFUL,
+                PaymentStatusEnum.CANCELLED,
+            ],
             PaymentStatusEnum.SUCCESSFUL: [PaymentStatusEnum.REFUNDED],
             PaymentStatusEnum.CANCELLED: [PaymentStatusEnum.SUCCESSFUL],
             PaymentStatusEnum.REFUNDED: [],

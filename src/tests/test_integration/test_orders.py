@@ -132,6 +132,7 @@ async def test_pay_order_with_mock(
                 "message": "Payment successful",
                 "requires_action": False,
             }
+
     class FakeEmailSender:
         async def send_payment_confirmation_email(self, *args, **kwargs):
             return None

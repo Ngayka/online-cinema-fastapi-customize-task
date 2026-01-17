@@ -32,7 +32,7 @@ from schemas.payments import (
     PaymentResultSchema,
     PaymentConfirmationEmailSchema,
     StripeCreateSchema,
-    StripeWebhookSchema
+    StripeWebhookSchema,
 )
 from schemas.orders import (
     OrderStatusEnum,
@@ -46,9 +46,6 @@ from schemas.cart import (
     CartReadSchema,
     CartItemCreateSchema,
     CartItemReadSchema,
-    MovieInCartReadSchema
+    MovieInCartReadSchema,
 )
-from schemas.profiles import (
-    ProfileCreateSchema,
-    ProfileResponseSchema
-)
+from schemas.profiles import ProfileCreateSchema, ProfileResponseSchema

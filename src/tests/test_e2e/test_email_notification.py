@@ -36,6 +36,7 @@ async def test_registration(
     - Ensure the email body contains the activation link.
     """
     from config.celery_app import celery_app
+
     celery_app.conf.task_always_eager = True
     celery_app.conf.task_eager_propagates = True
 
@@ -52,6 +53,7 @@ async def test_registration(
     )
     async with httpx.AsyncClient() as client:
         import asyncio
+
         await asyncio.sleep(1)
         mailhog_response = await client.get(mailhog_url)
 
