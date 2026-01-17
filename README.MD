@@ -1,3 +1,10 @@
+## Branching Logic
+
+- `dev` — main branch for demonstrating the completed solution.
+- `ci_dev` — formal branch used for CI/CD and integration of all tests.
+- Task-specific branches (e.g., `auth_dev`, `movies_dev`) were created for each task individually.
+- This structure reflects the real workflow, but currently we are formally making PRs `ci_dev → dev → main` to demonstrate the correct Git flow.
+
 ## Deploying the Project on AWS EC2
 
 Welcome to the AWS EC2 deployment guide for our project! This comprehensive tutorial will walk you through the entire process of deploying your application on an AWS EC2 instance. By following these steps, you'll set up a robust and scalable environment tailored to your project's needs.
@@ -71,6 +78,9 @@ Understanding the project's directory structure is crucial for navigating and ma
 └── src
     ├── config
     │   ├── __init__.py
+    │   ├── celery-app.py
+    │   ├── depemdencies_auth.py
+    │   ├── order_config.py
     │   ├── dependencies.py
     │   └── settings.py
     ├── database
@@ -117,6 +127,9 @@ Understanding the project's directory structure is crucial for navigating and ma
     ├── routes
     │   ├── __init__.py
     │   ├── accounts.py
+    │   ├── cart.py
+    │   └── orders.py
+    │   ├── payments.py
     │   ├── movies.py
     │   └── profiles.py
     ├── schemas
@@ -127,6 +140,9 @@ Understanding the project's directory structure is crucial for navigating and ma
     │   │   └── movies.py
     │   ├── movies.py
     │   └── profiles.py
+    │   ├── cart.py
+    │   └── payments.py
+    │   └── orders.py
     ├── security
     │   ├── __init__.py
     │   ├── http.py
@@ -134,10 +150,17 @@ Understanding the project's directory structure is crucial for navigating and ma
     │   ├── passwords.py
     │   ├── token_manager.py
     │   └── utils.py
+    ├── services
+    │   ├── __init__.py
+    │   ├── payment_service.py
     ├── storages
     │   ├── __init__.py
     │   ├── interfaces.py
     │   └── s3.py
+    ├── tasks
+    │   ├── __init__.py
+    │   ├── cleanup_tasks.py
+    │   └── email_tasks.py
     ├── tests
     │   ├── __init__.py
     │   ├── conftest.py
@@ -158,9 +181,14 @@ Understanding the project's directory structure is crucial for navigating and ma
     │       ├── test_accounts.py
     │       ├── test_movies.py
     │       └── test_profiles.py
+    │       ├── test_orders.py
+    │       ├── test_payments.py
+    │       └── test_cart.py
     └── validation
         ├── __init__.py
-        └── profile.py
+        ├── profile.py
+        ├── orders.py
+        └── payments.py
 ```
 
 ### Directory and File Descriptions

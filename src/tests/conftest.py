@@ -1,17 +1,18 @@
+from datetime import date
+
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import get_settings, get_accounts_email_notificator, get_s3_storage_client
-from database import (
-    reset_database,
-    get_db_contextmanager,
-    UserGroupEnum,
-    UserGroupModel
-)
+from database.models.accounts import UserGroupModel, UserGroupEnum, UserModel
+from database.models.movies import CountryModel, MovieModel, MovieStatusEnum
+from database.models.cart import Cart
+from database import reset_database, get_db_contextmanager
 from database.populate import CSVDatabaseSeeder
 from main import app
+from schemas import PaymentRequestSchema
 from security.interfaces import JWTAuthManagerInterface
 from security.token_manager import JWTAuthManager
 from storages import S3StorageClient
@@ -20,15 +21,9 @@ from tests.doubles.stubs.emails import StubEmailSender
 
 
 def pytest_configure(config):
-    config.addinivalue_line(
-        "markers", "e2e: End-to-end tests"
-    )
-    config.addinivalue_line(
-        "markers", "order: Specify the order of test execution"
-    )
-    config.addinivalue_line(
-        "markers", "unit: Unit tests"
-    )
+    config.addinivalue_line("markers", "e2e: End-to-end tests")
+    config.addinivalue_line("markers", "order: Specify the order of test execution")
+    config.addinivalue_line("markers", "unit: Unit tests")
 
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
@@ -47,8 +42,8 @@ async def reset_db(request):
         yield
 
 
-@pytest_asyncio.fixture(scope="session")
-async def reset_db_once_for_e2e(request):
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def reset_db_once_for_e2e():
     """
     Reset the database once for end-to-end tests.
 
@@ -56,6 +51,7 @@ async def reset_db_once_for_e2e(request):
     ensuring the database is reset before running E2E tests.
     """
     await reset_database()
+    yield
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -65,7 +61,9 @@ async def settings():
 
     This fixture returns the application settings by calling get_settings().
     """
-    return get_settings()
+    from config.settings import TestingSettings
+
+    return TestingSettings()
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -73,7 +71,7 @@ async def email_sender_stub():
     """
     Provide a stub implementation of the email sender.
 
-    This fixture returns an instance of StubEmailSender for testing purposes.
+    This fixture returns an instance of EmailSender for testing purposes.
     """
     return StubEmailSender()
 
@@ -99,7 +97,7 @@ async def s3_client(settings):
         endpoint_url=settings.S3_STORAGE_ENDPOINT,
         access_key=settings.S3_STORAGE_ACCESS_KEY,
         secret_key=settings.S3_STORAGE_SECRET_KEY,
-        bucket_name=settings.S3_BUCKET_NAME
+        bucket_name=settings.S3_BUCKET_NAME,
     )
 
 
@@ -113,21 +111,29 @@ async def client(email_sender_stub, s3_storage_fake):
     app.dependency_overrides[get_accounts_email_notificator] = lambda: email_sender_stub
     app.dependency_overrides[get_s3_storage_client] = lambda: s3_storage_fake
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as async_client:
         yield async_client
 
     app.dependency_overrides.clear()
 
 
 @pytest_asyncio.fixture(scope="session")
-async def e2e_client():
+async def e2e_client(settings):
     """
     Provide an asynchronous HTTP client for end-to-end tests.
 
     This client is available at the session scope.
     """
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
+    from config.dependencies import get_settings
+
+    app.dependency_overrides[get_settings] = lambda: settings
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as async_client:
         yield async_client
+    app.dependency_overrides.clear()
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -173,7 +179,7 @@ async def jwt_manager() -> JWTAuthManagerInterface:
     return JWTAuthManager(
         secret_key_access=settings.SECRET_KEY_ACCESS,
         secret_key_refresh=settings.SECRET_KEY_REFRESH,
-        algorithm=settings.JWT_SIGNING_ALGORITHM
+        algorithm=settings.JWT_SIGNING_ALGORITHM,
     )
 
 
@@ -203,9 +209,89 @@ async def seed_database(db_session):
     :type db_session: AsyncSession
     """
     settings = get_settings()
-    seeder = CSVDatabaseSeeder(csv_file_path=settings.PATH_TO_MOVIES_CSV, db_session=db_session)
+    seeder = CSVDatabaseSeeder(
+        csv_file_path=settings.PATH_TO_MOVIES_CSV, db_session=db_session
+    )
 
     if not await seeder.is_db_populated():
         await seeder.seed()
 
     yield db_session
+
+
+@pytest_asyncio.fixture
+async def test_country(db_session):
+    test_country = CountryModel(code="US", name="United States")
+    db_session.add(test_country)
+    await db_session.commit()
+    await db_session.refresh(test_country)
+    return test_country
+
+
+@pytest_asyncio.fixture
+async def test_movie(db_session, test_country):
+    test_movie = MovieModel(
+        name="Test Movie",
+        date=date(2024, 1, 1),
+        score=8.5,
+        overview="Test overview",
+        status=MovieStatusEnum.RELEASED,
+        budget=1_000_000,
+        revenue=5_000_000,
+        country_id=test_country.id,
+    )
+
+    db_session.add(test_movie)
+    await db_session.commit()
+    await db_session.refresh(test_movie)
+    return test_movie
+
+
+@pytest_asyncio.fixture
+async def test_movie2(db_session, test_country):
+    test_movie2 = MovieModel(
+        name="Test Movie2",
+        date=date(2024, 1, 1),
+        score=8.5,
+        overview="Test overview",
+        status=MovieStatusEnum.RELEASED,
+        budget=1_000_000,
+        revenue=5_000_000,
+        country_id=test_country.id,
+    )
+
+    db_session.add(test_movie2)
+    await db_session.commit()
+    await db_session.refresh(test_movie2)
+    return test_movie2
+
+
+@pytest_asyncio.fixture
+async def test_user(db_session):
+    user = UserModel.create(
+        email="test@example.com", raw_password="Hard_test123!", group_id=1
+    )
+    db_session.add(user)
+    await db_session.commit()
+    return user
+
+
+@pytest_asyncio.fixture
+async def test_cart(db_session, test_user):
+    cart = Cart(user_id=test_user.id)
+    db_session.add(cart)
+    await db_session.commit()
+    return cart
+
+
+@pytest_asyncio.fixture
+async def auth_headers(test_user, jwt_manager):
+    token = jwt_manager.create_access_token(
+        {"sub": test_user.email, "id": test_user.id}
+    )
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest_asyncio.fixture()
+def payment_data():
+    return PaymentRequestSchema(payment_method_id="pm_mock")
