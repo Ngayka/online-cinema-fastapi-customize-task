@@ -28,4 +28,11 @@ def send_activation_email_task(email: str, activation_link: str) -> None:
             payment_confirmation_template_name=settings.PAYMENT_CONFIRMATION_TEMPLATE_NAME,
         )
         await sender.send_activation_email(email, activation_link)
-    asyncio.run(_send())
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+    if loop and loop.is_running():
+        loop.create_task(_send())
+    else:
+        asyncio.run(_send())

@@ -7,8 +7,8 @@ from config.dependencies import get_settings
 settings = get_settings()
 
 celery_app = Celery(
-      main="online_movie", broker=settings.REDIS_URL, backend=settings.REDIS_URL
-  )
+    main="online_movie", broker=settings.REDIS_URL, backend=settings.REDIS_URL
+)
 
 if os.environ.get("TESTING") == "True":
     celery_app.conf.update(

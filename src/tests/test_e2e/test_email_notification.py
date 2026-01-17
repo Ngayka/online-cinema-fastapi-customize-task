@@ -44,13 +44,11 @@ async def test_registration(
     response = await e2e_client.post("/api/v1/accounts/register/", json=user_data)
     assert response.status_code == 201, f"Expected 201, got {response.status_code}"
     await e2e_db_session.commit()
-    import asyncio
-    await asyncio.sleep(1.5)
     response_data = response.json()
     assert response_data["email"] == user_data["email"]
 
     mailhog_url = (
-        f"http://127.0.0.1:{settings.MAILHOG_API_PORT}/api/v2/messages"
+        f"http://{settings.EMAIL_HOST}:{settings.MAILHOG_API_PORT}/api/v2/messages"
     )
     async with httpx.AsyncClient() as client:
         import asyncio
@@ -89,7 +87,8 @@ async def test_registration(
     link_element = soup.find("a", id="link")
     assert link_element is not None, "Activation link element with id 'link' not found!"
     activation_url = link_element["href"]
-    assert validate_url(activation_url), f"The URL '{activation_url}' is not valid!"
+    assert "/accounts/activate/?token=" in activation_url
+    assert settings.SITE_URL in activation_url
 
 
 @pytest.mark.e2e
@@ -147,7 +146,7 @@ async def test_account_activation(e2e_client, settings, e2e_db_session):
     assert activated_user.is_active, f"User {user_email} is not active!"
 
     mailhog_url = (
-        f"http://127.0.0.1:8025/api/v2/messages"
+        f"http://{settings.EMAIL_HOST}:{settings.MAILHOG_API_PORT}/api/v2/messages"
     )
     async with httpx.AsyncClient() as client:
         mailhog_response = await client.get(mailhog_url)
@@ -372,6 +371,7 @@ async def test_reset_password(e2e_client, e2e_db_session, settings):
     stmt_user = select(UserModel).where(UserModel.email == user_email)
     user_result = await e2e_db_session.execute(stmt_user)
     updated_user = user_result.scalars().first()
+    await e2e_db_session.refresh(updated_user)
     assert updated_user is not None, f"User with email {user_email} not found!"
     assert updated_user.verify_password(
         new_password

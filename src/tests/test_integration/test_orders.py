@@ -26,6 +26,7 @@ async def test_create_order_success(
     assert response.status_code == 201
 
 
+@pytest.mark.asyncio
 async def test_get_all_orders(
     client, test_user, db_session, test_cart, auth_headers, test_movie, test_movie2
 ):
@@ -57,6 +58,7 @@ async def test_get_all_orders(
     assert len(data["orders"]) == 1
 
 
+@pytest.mark.asyncio
 async def test_cancel_order(
     client, test_user, db_session, test_cart, auth_headers, test_movie
 ):
@@ -89,6 +91,7 @@ async def test_cancel_order(
     assert order.status == OrderStatusEnum.CANCELED
 
 
+@pytest.mark.asyncio
 async def test_pay_order_with_mock(
     client, test_user, db_session, test_cart, auth_headers, payment_data, test_movie
 ):
@@ -118,7 +121,7 @@ async def test_pay_order_with_mock(
     assert order.order_items
     assert order.order_items[0].price_at_order is not None
 
-    from routes.orders import get_payment_service
+    from routes.orders import get_payment_service, get_accounts_email_notificator
     from main import app
 
     class FakePaymentService:
@@ -129,16 +132,22 @@ async def test_pay_order_with_mock(
                 "message": "Payment successful",
                 "requires_action": False,
             }
+    class FakeEmailSender:
+        async def send_payment_confirmation_email(self, *args, **kwargs):
+            return None
 
     app.dependency_overrides[get_payment_service] = lambda: FakePaymentService()
+    app.dependency_overrides[get_accounts_email_notificator] = lambda: FakeEmailSender()
 
     try:
-
         response = await client.post(
             f"/api/v1/orders/{order.id}/pay",
             json=payment_data.model_dump(),
             headers=auth_headers,
         )
+
+        if response.status_code == 500:
+            print(f"\nDetail: {response.json()}")
 
         assert response.status_code == 200
         data = response.json()
