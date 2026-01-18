@@ -24,5 +24,5 @@ __all__ = (
     "get_purchased_movie_ids",
     "get_order_by_id_and_user",
     "get_accounts_email_notificator",
-    "get_s3_storage_client"
+    "get_s3_storage_client",
 )
