@@ -163,31 +163,6 @@ async def e2e_db_session():
         yield session
 
 
-@pytest_asyncio.fixture(autouse=True)
-async def ensure_bucket_exists(settings):
-    session = aioboto3.Session()
-    async with session.client(
-        "s3",
-        endpoint_url=settings.S3_STORAGE_ENDPOINT,
-        aws_access_key_id=settings.S3_STORAGE_ACCESS_KEY,
-        aws_secret_access_key=settings.S3_STORAGE_ACCESS_KEY,
-    ) as s3:
-        try:
-            await s3.head_bucket(Bucket=settings.S3_BUCKET_NAME)
-        except Exception:
-            await s3.create_bucket(Bucket=settings.S3_BUCKET_NAME)
-        yield
-        try:
-            response = await s3.list_objects_v2(Bucket=settings.S3_BUCKET_NAME)
-            if "Contents" in response:
-                objects = [{"Key": obj["Key"]} for obj in response["Contents"]]
-                await s3.delete_objects(
-                    Bucket=settings.S3_BUCKET_NAME, Delete={"Objects": objects}
-                )
-        except Exception as e:
-            print(f"Cleanup failed: {e}")
-
-
 @pytest_asyncio.fixture(scope="function")
 async def jwt_manager() -> JWTAuthManagerInterface:
     """
