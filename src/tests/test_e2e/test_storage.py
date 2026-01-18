@@ -16,7 +16,7 @@ async def ensure_bucket_exists(settings):
         "s3",
         endpoint_url=settings.S3_STORAGE_ENDPOINT,
         aws_access_key_id=settings.S3_STORAGE_ACCESS_KEY,
-        aws_secret_access_key=settings.S3_STORAGE_ACCESS_KEY,
+        aws_secret_access_key=settings.S3_STORAGE_SECRET_KEY,
     ) as s3:
         try:
             await s3.head_bucket(Bucket=settings.S3_BUCKET_NAME)
