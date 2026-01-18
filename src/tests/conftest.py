@@ -1,5 +1,6 @@
 from datetime import date
 
+import aioboto3
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy import insert

@@ -1,16 +1,45 @@
 import aioboto3
 import pytest
 from io import BytesIO
+
+import pytest_asyncio
 from PIL import Image
 from sqlalchemy import select
 
 from database.models.accounts import UserModel, UserProfileModel
 
 
+@pytest_asyncio.fixture(autouse=True)
+async def ensure_bucket_exists(settings):
+    session = aioboto3.Session()
+    async with session.client(
+        "s3",
+        endpoint_url=settings.S3_STORAGE_ENDPOINT,
+        aws_access_key_id=settings.S3_STORAGE_ACCESS_KEY,
+        aws_secret_access_key=settings.S3_STORAGE_SECRET_KEY,
+    ) as s3:
+        try:
+            await s3.head_bucket(Bucket=settings.S3_BUCKET_NAME)
+        except Exception:
+            await s3.create_bucket(Bucket=settings.S3_BUCKET_NAME)
+        yield
+        try:
+            response = await s3.list_objects_v2(Bucket=settings.S3_BUCKET_NAME)
+            if "Contents" in response:
+                objects = [{"Key": obj["Key"]} for obj in response["Contents"]]
+                await s3.delete_objects(
+                    Bucket=settings.S3_BUCKET_NAME, Delete={"Objects": objects}
+                )
+        except Exception as e:
+            print(f"Cleanup failed: {e}")
+
+
 @pytest.mark.e2e
 @pytest.mark.order(7)
 @pytest.mark.asyncio
-async def test_create_user_profile(e2e_client, e2e_db_session, settings, s3_client):
+async def test_create_user_profile(
+    e2e_client, e2e_db_session, settings, s3_client, ensure_bucket_exists
+):
     """
     End-to-end test for creating a user profile with avatar upload (async + aioboto3.Session version).
 

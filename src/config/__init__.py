@@ -14,4 +14,15 @@ from config.order_config import (
 )
 from .celery_app import celery_app
 
-__all__ = ("celery_app",)
+__all__ = (
+    "celery_app",
+    "get_settings",
+    "get_jwt_auth_manager",
+    "get_payment_service",
+    "create_order_service",
+    "check_pending_orders",
+    "get_purchased_movie_ids",
+    "get_order_by_id_and_user",
+    "get_accounts_email_notificator",
+    "get_s3_storage_client",
+)
