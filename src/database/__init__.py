@@ -19,7 +19,6 @@ from database.models.movies import (
 from database.models.orders import Order, OrderItem, OrderStatusEnum
 from database.models.cart import Cart, CartItem
 from database.models.payments import Payment, PaymentItem, PaymentStatusEnum
-from database.models.payments import Payment
 import os
 from database.models.base import Base
 from database.session_sqlite import reset_sqlite_database as reset_database
