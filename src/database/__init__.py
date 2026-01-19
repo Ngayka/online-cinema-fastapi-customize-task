@@ -3,7 +3,7 @@ from database.models.accounts import (
     UserGroupModel,
     UserGroupEnum,
     UserProfileModel,
-    GenderEnum
+    GenderEnum,
 )
 from database.models.movies import (
     MovieModel,
@@ -14,22 +14,11 @@ from database.models.movies import (
     ActorsMoviesModel,
     GenreModel,
     LanguageModel,
-    CountryModel
+    CountryModel,
 )
-from database.models.orders import (
-    Order,
-    OrderItem,
-    OrderStatusEnum
-)
-from database.models.cart import (
-    Cart,
-    CartItem
-)
-from database.models.payments import (
-    Payment,
-    PaymentItem,
-    PaymentStatusEnum
-)
+from database.models.orders import Order, OrderItem, OrderStatusEnum
+from database.models.cart import Cart, CartItem
+from database.models.payments import Payment, PaymentItem, PaymentStatusEnum
 from database.models.payments import Payment
 import os
 from database.models.base import Base
