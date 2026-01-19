@@ -17,12 +17,10 @@ celery_app.conf.imports = [
     "tasks.cleanup_tasks",
 ]
 celery_app.conf.broker_connection_retry_on_startup = True
-celery_app.autodiscover_tasks(["tasks"], related_name="email_tasks")
-celery_app.autodiscover_tasks(["tasks"], related_name="cleanup_tasks")
 
 celery_app.conf.beat_schedule = {
     "cleanup_expired_tokens_every_24_hours": {
-        "task": "tasks.cleanup_task.cleanup_expired_tokens",
+        "task": "tasks.cleanup_tasks.cleanup_expired_tokens",
         "schedule": crontab(minute=59, hour=23),
     }
 }

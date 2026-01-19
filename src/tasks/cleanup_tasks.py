@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from celery import shared_task
 from sqlalchemy import delete
 
-from database import ActivationTokenModel, PasswordResetTokenModel
+from database.models.accounts import ActivationTokenModel, PasswordResetTokenModel
 from database.session_postgresql import AsyncPostgresqlSessionLocal
 
 
