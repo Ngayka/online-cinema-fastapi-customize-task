@@ -31,4 +31,4 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
-            'bash /home/ubuntu/src/py-fastapi-homework-5-ec2-deploy-task/commands/deploy.sh'
+            "cd ~/src/online-cinema-fastapi-customize-task && bash commands/deploy.sh"
