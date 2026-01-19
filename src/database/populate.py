@@ -24,6 +24,9 @@ from database.models.accounts import (
     UserGroupModel,
     UserGroupEnum,
 )
+from database.models.cart import Cart, CartItem
+from database.models.payments import Payment, PaymentItem, PaymentStatusEnum
+from database.models.orders import Order, OrderItem, OrderStatusEnum
 from database import get_db_contextmanager
 
 CHUNK_SIZE = 1000
